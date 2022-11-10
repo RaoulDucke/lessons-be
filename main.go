@@ -1,38 +1,54 @@
 package main
 
-import (
-	"net/http"
-	"time"
+import "fmt"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
-)
+func scanNumber() (int, error) {
+	var a int
+	_, err := fmt.Scanf("%d", &a)
+	if err != nil {
+		return 0, fmt.Errorf("scanf error: %s", err.Error())
+	}
+	return a, nil
+}
 
 func main() {
+	for {
 
-	r := gin.Default()
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowHeaders:     []string{"Origin"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
+		var what string
 
-	r.GET("/user", func(c *gin.Context) {
-		id := c.Query("id")
-		if id == "1" {
-			c.JSON(http.StatusOK, gin.H{"name": "PASHA"})
+		fmt.Println("Выберите действие (+, -, *, /)")
+		fmt.Scanf("%s\n", &what)
+		if what == "exit" {
 			return
 		}
 
-		if id == "2" {
-			c.JSON(http.StatusOK, gin.H{"name": "TOXA"})
+		fmt.Println("Введите первое значение: ")
+
+		a, err := scanNumber()
+		if err != nil {
+			fmt.Println(err.Error())
 			return
 		}
 
-		c.JSON(http.StatusNotFound, gin.H{"message": "not found"})
-	})
-
-	r.Run()
+		fmt.Println("Введите второе значение: ")
+		b, err := scanNumber()
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		var c int
+		if what == "+" {
+			c = a + b
+			fmt.Println("Результат: ", c)
+		} else if what == "-" {
+			c = a - b
+			fmt.Println("Результат: ", c)
+		} else if what == "*" {
+			c = a * b
+			fmt.Println("Результат: ", c)
+		} else if what == "/" {
+			c = a / b
+			fmt.Println("Результат: ", c)
+		}
+	}
 }
