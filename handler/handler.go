@@ -23,7 +23,8 @@ func (h *Handler) AddProduct(p *Product) error {
 }
 
 func (h *Handler) GetProducts() []*Product {
-	return convertToProducts(h.r.GetProducts())
+	products := h.r.GetProducts()
+	return convertToProducts(products)
 }
 
 func convertToDBProduct(p *Product) *db.Product {
@@ -35,7 +36,7 @@ func convertToDBProduct(p *Product) *db.Product {
 func convertToProducts(products []*db.Product) []*Product {
 	res := make([]*Product, 0, len(products))
 	for _, p := range products {
-		res = append(res, &Product{Title: p.Title})
+		res = append(res, &Product{Title: p.Title, ID: p.ID})
 	}
 	return res
 
