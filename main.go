@@ -25,6 +25,17 @@ func main() {
 	h := handler.New(db.New())
 
 	r.GET("/products", func(c *gin.Context) {
+		idString := c.Request.URL.Query().Get("id")
+		if idString != "" {
+			//Конвертировать idString из строки в инт64 записать в перенную id)
+			//Если параметр не число,тонужно вернуть стату bad request (400)
+			product, ok := h.GetProduct(id)
+			if ok {
+				// вернуть как результат продуктсо статусом ок (200)
+			}
+			// Иначе вернуть not found (404)
+			return
+		}
 		c.JSON(http.StatusOK, h.GetProducts())
 	})
 	r.POST("/products", func(c *gin.Context) {
