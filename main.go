@@ -1,54 +1,50 @@
 package main
 
-import "fmt"
+import (
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"time"
 
-func scanNumber() (int, error) {
-	var a int
-	_, err := fmt.Scanf("%d", &a)
-	if err != nil {
-		return 0, fmt.Errorf("scanf error: %s", err.Error())
-	}
-	return a, nil
-}
+	"github.com/RaolDucke/lessons-be/db"
+	"github.com/RaolDucke/lessons-be/handler"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+)
 
 func main() {
-	for {
+	r := gin.Default()
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowHeaders:     []string{"Origin"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
-		var what string
+	h := handler.New(db.New())
 
-		fmt.Println("Выберите действие (+, -, *, /)")
-		fmt.Scanf("%s\n", &what)
-		if what == "exit" {
-			return
-		}
-
-		fmt.Println("Введите первое значение: ")
-
-		a, err := scanNumber()
+	r.GET("/products", func(c *gin.Context) {
+		c.JSON(http.StatusOK, h.GetProducts())
+	})
+	r.POST("/products", func(c *gin.Context) {
+		jsonData, err := ioutil.ReadAll(c.Request.Body)
 		if err != nil {
-			fmt.Println(err.Error())
+			c.JSON(http.StatusInternalServerError, "Internal error")
 			return
 		}
-
-		fmt.Println("Введите второе значение: ")
-		b, err := scanNumber()
+		product := new(handler.Product)
+		err = json.Unmarshal(jsonData, product)
 		if err != nil {
-			fmt.Println(err.Error())
+			c.JSON(http.StatusInternalServerError, "Internal error")
 			return
 		}
-		var c int
-		if what == "+" {
-			c = a + b
-			fmt.Println("Результат: ", c)
-		} else if what == "-" {
-			c = a - b
-			fmt.Println("Результат: ", c)
-		} else if what == "*" {
-			c = a * b
-			fmt.Println("Результат: ", c)
-		} else if what == "/" {
-			c = a / b
-			fmt.Println("Результат: ", c)
+		err = h.AddProduct(product)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, "Internal error")
+			return
 		}
-	}
+	})
+
+	r.Run()
 }
