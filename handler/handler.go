@@ -27,16 +27,31 @@ func (h *Handler) GetProducts() []*Product {
 	return convertToProducts(products)
 }
 
+func (h *Handler) GetProduct(id int64) (*Product, bool) {
+	product, ok := h.r.GetProduct(id)
+	if ok {
+		return convertToProduct(product), true
+	}
+	return nil, false
+}
+
+func convertToProduct(p *db.Product) *Product {
+	return &Product{
+		Identity: p.ID,
+		Name:     p.Title,
+	}
+}
+
 func convertToDBProduct(p *Product) *db.Product {
 	return &db.Product{
-		Title: p.Title,
+		Title: p.Name,
 	}
 }
 
 func convertToProducts(products []*db.Product) []*Product {
 	res := make([]*Product, 0, len(products))
 	for _, p := range products {
-		res = append(res, &Product{Title: p.Title, ID: p.ID})
+		res = append(res, convertToProduct(p))
 	}
 	return res
 

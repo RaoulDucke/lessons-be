@@ -1,6 +1,6 @@
 package handler
 
 type Product struct {
-	ID    int64  `json:"id"`
-	Title string `json:"title"`
+	Identity int64  `json:"id"`
+	Name     string `json:"title"`
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/RaolDucke/lessons-be/db"
@@ -27,11 +28,19 @@ func main() {
 	r.GET("/products", func(c *gin.Context) {
 		idString := c.Request.URL.Query().Get("id")
 		if idString != "" {
+			id, err := strconv.ParseInt(idString, 10, 64)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, "bad request")
+				return
+			}
 			//Конвертировать idString из строки в инт64 записать в перенную id)
 			//Если параметр не число,тонужно вернуть стату bad request (400)
 			product, ok := h.GetProduct(id)
 			if ok {
+				c.JSON(http.StatusOK, product)
 				// вернуть как результат продуктсо статусом ок (200)
+			} else {
+				c.JSON(http.StatusNotFound, "not found")
 			}
 			// Иначе вернуть not found (404)
 			return
