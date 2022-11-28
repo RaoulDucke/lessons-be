@@ -30,6 +30,24 @@ func (r *Repository) AddProduct(p *Product) error {
 	return nil
 }
 
+func (r *Repository) UpdateProduct(p *Product) error {
+	if p == nil {
+		return errors.New("product is nil")
+	}
+	if p.Title == "" {
+		return errors.New("title is empty")
+	}
+	if p.ID <= 0 {
+		return errors.New("id <= 0")
+	}
+	product, ok := r.GetProduct(p.ID)
+	if ok {
+		product.Title = p.Title
+	}
+	return nil
+
+}
+
 func (r *Repository) GetProducts() []*Product {
 	return r.products
 }
