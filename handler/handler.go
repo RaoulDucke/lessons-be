@@ -31,6 +31,14 @@ func (h *Handler) AddProduct(c *gin.Context) {
 		internalError(c, err)
 		return
 	}
+	if product.Name == "" {
+		badRequst(c)
+		return
+	}
+	if product.Price <= 0 {
+		badRequst(c)
+		return
+	}
 	err = h.r.AddProduct(convertToDBProduct(product))
 	if err != nil {
 		internalError(c, err)
@@ -72,7 +80,7 @@ func (h *Handler) UpdateProduct(c *gin.Context) {
 		internalError(c, err)
 		return
 	}
-	if product.Name == "" {
+	if product.Name == "" && product.Price <= 0 {
 		badRequst(c)
 		return
 	}
@@ -103,6 +111,7 @@ func convertToProduct(p *db.Product) *Product {
 	return &Product{
 		Identity: p.ID,
 		Name:     p.Title,
+		Price:    p.Price,
 	}
 }
 
@@ -110,6 +119,7 @@ func convertToDBProduct(p *Product) *db.Product {
 	return &db.Product{
 		Title: p.Name,
 		ID:    p.Identity,
+		Price: p.Price,
 	}
 }
 
