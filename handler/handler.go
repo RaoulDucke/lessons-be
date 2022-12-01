@@ -72,9 +72,21 @@ func (h *Handler) UpdateProduct(c *gin.Context) {
 		internalError(c, err)
 		return
 	}
-	err = h.r.UpdateProduct(convertToDBProduct(product))
+	if product.Name == "" {
+		badRequst(c)
+		return
+	}
+	if product.Identity <= 0 {
+		badRequst(c)
+		return
+	}
+	ok, err := h.r.UpdateProduct(convertToDBProduct(product))
 	if err != nil {
 		internalError(c, err)
+		return
+	}
+	if !ok {
+		notFound(c)
 		return
 	}
 }
