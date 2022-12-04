@@ -5,3 +5,9 @@ type Product struct {
 	Title string
 	Price float64
 }
+
+type User struct {
+	Id      int64
+	Name    string
+	Surname string
+}

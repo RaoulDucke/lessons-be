@@ -4,11 +4,13 @@ import "errors"
 
 type Repository struct {
 	products []*Product
+	users    []*User
 }
 
 func New() *Repository {
 	return &Repository{
 		products: []*Product{},
+		users:    []*User{},
 	}
 
 }
@@ -77,4 +79,38 @@ func (r *Repository) DoesProductExist(id int64) bool {
 
 	}
 	return false
+}
+
+func (r *Repository) AddUser(p *User) error {
+	if p == nil {
+		return errors.New("user is nil")
+	}
+	if p.Name == "" {
+		return errors.New("name is empty")
+	}
+	if p.Surname == "" {
+		return errors.New("surname is empty")
+	}
+	id := int64(1)
+	if len(r.users) > 0 {
+		lastUser := r.users[len(r.users)-1]
+		id = lastUser.Id + 1
+	}
+
+	p.Id = id
+	r.users = append(r.users, p)
+	return nil
+}
+
+func (r *Repository) GetUsers() []*User {
+	return r.users
+}
+func (r *Repository) GetUser(id int64) (*User, bool) {
+	for _, user := range r.users {
+		if id == user.Id {
+			return user, true
+		}
+
+	}
+	return nil, false
 }
