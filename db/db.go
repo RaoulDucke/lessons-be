@@ -1,20 +1,29 @@
 package db
 
-import "errors"
+import (
+	"database/sql"
+	"errors"
+
+	"golang.org/x/net/context"
+)
 
 type Repository struct {
 	products []*Product
 	users    []*User
+
+	database *sql.DB
 }
 
-func New() *Repository {
+func New(database *sql.DB) *Repository {
 	return &Repository{
 		products: []*Product{},
 		users:    []*User{},
+
+		database: database,
 	}
 
 }
-func (r *Repository) AddProduct(p *Product) error {
+func (r *Repository) AddProduct(ctx context.Context, p *Product) error {
 	if p == nil {
 		return errors.New("product is nil")
 	}
@@ -33,9 +42,18 @@ func (r *Repository) AddProduct(p *Product) error {
 	p.ID = id
 	r.products = append(r.products, p)
 	return nil
+
+	// 	_, err := r.database.ExecContext(ctx, `
+	// 		insert into product (title, price)
+	// 		values ($1,$2)
+	// 	`, p.Title, p.Price)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	return nil
 }
 
-func (r *Repository) UpdateProduct(p *Product) (bool, error) {
+func (r *Repository) UpdateProduct(ctx context.Context, p *Product) (bool, error) {
 	if p == nil {
 		return false, errors.New("product is nil")
 	}
@@ -57,8 +75,29 @@ func (r *Repository) UpdateProduct(p *Product) (bool, error) {
 	return ok, nil
 }
 
-func (r *Repository) GetProducts() []*Product {
-	return r.products
+func (r *Repository) GetProducts(ctx context.Context) ([]*Product, error) {
+	raws, err := r.database.QueryContext(ctx, `
+	select id,title, price
+	from product
+	`)
+	if err != nil {
+		return nil, err
+	}
+
+	defer raws.Close()
+	var result []*Product
+
+	for raws.Next() {
+		p := new(Product)
+		err = raws.Scan(&p.ID, &p.Title, &p.Price)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, p)
+	}
+
+	return result, nil
 }
 
 func (r *Repository) GetProduct(id int64) (*Product, bool) {
